@@ -1,0 +1,10 @@
+[project]
+name = "ag2-patter-poc"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ag2[openai]>=0.9.1.post0",
+    "pydantic>=2.11.4",
+]
