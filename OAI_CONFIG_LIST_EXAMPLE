@@ -1,0 +1,9 @@
+[
+  {
+    "model": "gpt-4o-mini",
+    "api_key": "<api-key-here>",
+    "tags": [
+      "gpt-4o-mini"
+    ]
+  }
+]

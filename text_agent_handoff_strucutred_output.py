@@ -2,7 +2,10 @@ from autogen import LLMConfig, ConversableAgent  # type: ignore
 from autogen.agentchat.group.patterns.pattern import DefaultPattern  # type: ignore
 from typing import Union, List, Literal, Annotated
 from pydantic import BaseModel, Field
-from autogen.agentchat.group.targets.transition_target import RevertToUserTarget
+from autogen.agentchat.group.targets.transition_target import (
+    RevertToUserTarget,
+    TerminateTarget,
+)
 
 """
 this file will expose a pattern that will use only one structured output for both text and live agent
@@ -190,12 +193,13 @@ class BotMessage(BaseModel):
     live_agent_team_id: str | None = None
 
 
-llm_config = LLMConfig(
-    api_type="openai",
-    model="gpt-4o-mini",
-    response_format=BotMessage,
-    api_key=OPEN_API_KEY,
-)
+
+# llm_config = LLMConfig(
+#     api_type="openai",
+#     model="gpt-4o-mini",
+#     response_format=BotMessage,
+#     api_key=OPEN_API_KEY,
+# )
 
 agent_prompt = """
 ## 🎯 Prompt: AI Customer Support Agent
@@ -231,13 +235,24 @@ You are an **AI-powered Customer Support Agent** working on behalf of **[Company
 - Do **not** make up policies or features that aren't in the knowledge base.
 - If you’re unsure, say: “Let me check on that and get back to you.”
 - Limit each response to **3 short paragraphs** or fewer.
+- If user sends empty messages consider it as a conversation start and greet them.
 
 
 """
+config_list = autogen.config_list_from_json(
+    "OAI_CONFIG_LIST",
+    filter_dict={
+        "tags": ["gpt-4o-mini"],
+    },
+)
 
 
 admin_created_agent = ConversableAgent(
-    name="alan_turing", llm_config=llm_config, system_message=agent_prompt
+    name="alan_turing",
+    # llm_config=llm_config,
+    config_list={"config_list": config_list}
+    system_message=agent_prompt,
+    # human_input_mode="NEVER",
 )
 
 
@@ -246,6 +261,6 @@ user = ConversableAgent(name="user", human_input_mode="ALWAYS")
 pattern = DefaultPattern(
     initial_agent=admin_created_agent,
     agents=[admin_created_agent],
-    group_after_work=RevertToUserTarget(),
+    group_after_work=TerminateTarget(),
     user_agent=user,
 )
